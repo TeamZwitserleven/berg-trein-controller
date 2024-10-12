@@ -27,6 +27,8 @@ const (
 
 // State of state machine
 type stateMachine struct {
+	// Motor controller
+	mc *motorController
 	// Current state
 	state state
 	// When the current state was reached
@@ -39,12 +41,22 @@ func (m *stateMachine) Run() {
 	m.changeState(stateInitial)
 	waitTimeInS1 := time.Second * 5
 	waitTimeInS4 := time.Second * 10
+	lastRevActive := false
 
 	for {
 		s1Active := !S1.Get()
 		s2Active := !S2.Get()
 		s3Active := !S3.Get()
 		s4Active := !S4.Get()
+		revActive := !REV.Get()
+
+		if revActive != lastRevActive {
+			// REV switch changes
+			m.mc.SetLocDirection(revActive)
+			lastRevActive = revActive
+			m.mc.FullStop()
+			m.changeState(stateInitial)
+		}
 
 		switch m.state {
 		// In initial state, wait until a sensor is activated
@@ -110,37 +122,37 @@ func (m *stateMachine) Run() {
 
 // Start driving at full speed to S3
 func (m *stateMachine) driveToS3() {
-	driveForward(true)
+	m.mc.DriveForward(true)
 	m.changeState(stateDrivingToS3)
 }
 
 // Start driving at full speed to S2
 func (m *stateMachine) driveToS2() {
-	driveBackward(true)
+	m.mc.DriveBackward(true)
 	m.changeState(stateDrivingToS2)
 }
 
 // Start driving at slow speed to S4
 func (m *stateMachine) driveToS4() {
-	driveForward(false)
+	m.mc.DriveForward(false)
 	m.changeState(stateDrivingToS4)
 }
 
 // Start driving at slow speed to S1
 func (m *stateMachine) driveToS1() {
-	driveBackward(false)
+	m.mc.DriveBackward(false)
 	m.changeState(stateDrivingToS1)
 }
 
 // Stop driving and wait in S1
 func (m *stateMachine) waitInS1() {
-	fullStop()
+	m.mc.FullStop()
 	m.changeState(stateStoppedInS1)
 }
 
 // Stop driving and wait in S4
 func (m *stateMachine) waitInS4() {
-	fullStop()
+	m.mc.FullStop()
 	m.changeState(stateStoppedInS4)
 }
 
