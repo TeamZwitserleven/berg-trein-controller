@@ -1,0 +1,9 @@
+{
+    "go.toolsEnvVars": {
+        "GOPRIVATE": "gitlab.com/deepup-gmbh",
+        "GOOS": "linux",
+        "GOARCH": "arm",
+        "GOROOT": "/Users/ewout/Library/Caches/tinygo/goroot-c5a408889a7f85301f61c72fc0e76312e45057c8d3f80f76cb6de759cc199b93",
+        "GOFLAGS": "-tags=cortexm,baremetal,linux,arm,rp2040,rp,waveshare_rp2040_zero,tinygo,purego,osusergo,math_big_pure_go,gc.conservative,scheduler.tasks,serial.usb"
+    }
+}
