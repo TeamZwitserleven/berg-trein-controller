@@ -38,7 +38,7 @@ var (
 )
 
 const (
-	i2cAddress = uint8(0x28)
+	i2cAddress = uint8(0x27)
 )
 
 type pwm interface {
@@ -110,7 +110,7 @@ func main() {
 	// Start listening to I2C
 	go func() {
 		for {
-			if err := listenForIncomingI2CRequests(machine.I2C0, i2cAddress); err != nil {
+			if err := listenForIncomingI2CRequests(machine.I2C0, i2cAddress, &m); err != nil {
 				println("listenForIncomingI2CRequests failed: ", err)
 				time.Sleep(time.Second)
 			}

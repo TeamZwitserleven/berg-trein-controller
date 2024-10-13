@@ -33,6 +33,12 @@ type stateMachine struct {
 	state state
 	// When the current state was reached
 	lastChange time.Time
+
+	s1Active  bool
+	s2Active  bool
+	s3Active  bool
+	s4Active  bool
+	revActive bool
 }
 
 // Run the state machine
@@ -49,6 +55,12 @@ func (m *stateMachine) Run() {
 		s3Active := !S3.Get()
 		s4Active := !S4.Get()
 		revActive := !REV.Get()
+
+		m.s1Active = s1Active
+		m.s2Active = s2Active
+		m.s3Active = s3Active
+		m.s4Active = s4Active
+		m.revActive = revActive
 
 		if revActive != lastRevActive {
 			// REV switch changes
@@ -161,4 +173,38 @@ func (m *stateMachine) changeState(newState state) {
 	m.state = newState
 	m.lastChange = time.Now()
 	led.WriteColors([]color.RGBA{colorByState[m.state]})
+}
+
+// Gets the current state formatted for I2C interface
+func (m *stateMachine) GetI2CByte() uint8 {
+	result := uint8(0)
+	if m.revActive {
+		result |= 0b00000001
+	}
+	if m.s1Active {
+		result |= 0b00000010
+	}
+	if m.s2Active {
+		result |= 0b00000100
+	}
+	if m.s3Active {
+		result |= 0b00001000
+	}
+	if m.s4Active {
+		result |= 0b00010000
+	}
+	if m.locIsDriving() {
+		result |= 0b00100000
+	}
+	return result
+}
+
+// Is the loc currently in driving state
+func (m *stateMachine) locIsDriving() bool {
+	switch m.state {
+	case stateInitial, stateStoppedInS1, stateStoppedInS4:
+		return false
+	default:
+		return true
+	}
 }
